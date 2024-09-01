@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -16,8 +16,12 @@ export class AuthService {
   ): Promise<{ access_token: string }> {
     const user = await this.usersService.findByEmail(email);
 
-    if (!bcrypt.compareSync(password, user.password)) {
-      throw new UnauthorizedException('A senha está inválida.');
+    if(user) {
+      if (!bcrypt.compareSync(password, user.password)) {
+        throw new UnauthorizedException('Credenciais inválidas.');
+      }
+    } else {
+      throw new NotFoundException('Não existe usuário cadastrado com esse email')
     }
 
     const payload = { sub: user.id, email: user.email };

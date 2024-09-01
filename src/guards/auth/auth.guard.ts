@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 
 export const jwtConstants = {
-  secret: 'rPN6iD1ay2m1mVe3ufsNGZCm5rLDU1x1bsSNt4RaLw1izV035Z',
+  secret: "rPN6iD1ay2m1mVe3ufsNGZCm5rLDU1x1bsSNt4RaLw1izV035Z",
 };
 
 @Injectable()
