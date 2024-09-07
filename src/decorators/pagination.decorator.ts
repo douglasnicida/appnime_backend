@@ -1,46 +1,20 @@
-import {
-  BadRequestException,
-  createParamDecorator,
-  ExecutionContext,
-} from '@nestjs/common';
-
-import { Request } from 'express';
-
 export interface Pagination {
   page: number;
   limit: number;
-  size: number;
   offset: number;
 }
 
-export type Paginated<T> = {
-  total: number;
-  items: T[];
-  page: number;
-  size: number;
-};
+export type PaginateOptions = { page?: number | string, perPage?: number | string }
+export type PaginateFunction = <T, K>(model: any, args?: K, options?: PaginateOptions) => Promise<PaginatedResult<T>>
 
-export const PaginationParams = createParamDecorator(
-  (_data, ctx: ExecutionContext): Pagination => {
-    const req: Request = ctx.switchToHttp().getRequest();
-    const page = Number(req.query.page as string);
-    const size = Number(req.query.size as string);
-
-    const MAX_SIZE = 10;
-
-    if (isNaN(page) || page < 0 || isNaN(size) || size < 0) {
-      throw new BadRequestException('Os dados de paginação são inválidos');
-    }
-
-    if (size > MAX_SIZE) {
-      throw new BadRequestException(
-        `Uma página deve ter no máximo ${MAX_SIZE} elementos.`,
-      );
-    }
-
-    const limit = size;
-    const offset = page * limit;
-
-    return { page, limit, size, offset };
-  },
-);
+export class PaginatedResult<T> {
+  data: T[];
+  meta: {
+    total: number;
+    lastPage: number;
+    currentPage: number;
+    perPage: number;
+    prev: number | null;
+    next: number | null;
+  };
+}

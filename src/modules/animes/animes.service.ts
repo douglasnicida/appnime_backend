@@ -7,8 +7,9 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'prisma/service/prisma.service';
 import { UsersService } from 'src/modules/users/users.service';
-import { Pagination } from 'src/decorators/pagination.decorator';
+import { PaginatedResult, Pagination } from 'src/decorators/pagination.decorator';
 import { CreateAnimeDto } from './dto/create-anime.dto';
+import { Anime } from '@prisma/client';
 
 @Injectable()
 export class AnimesService {
@@ -47,18 +48,42 @@ export class AnimesService {
     });
   }
 
-  async findAll(pagination: Pagination) {
-    const { page, limit, size, offset } = pagination;
+  async findAll(pagination: Pagination, filters?: string[]): Promise<PaginatedResult<Anime>> {
+    const { page, limit, offset } = pagination;
 
-    const [response, total] = await this.prismaService.anime.findMany({
+
+    const responseTotal: Anime[] = await this.prismaService.anime.findMany({
+      orderBy: {
+        start_airing: 'desc',
+      }
+    });
+
+    const response: Anime[] = await this.prismaService.anime.findMany({
       take: limit,
       skip: offset,
       orderBy: {
         start_airing: 'desc',
       },
+      // where: {
+      //   en_title: {contains: filters[0] || ''},
+      //   jp_title: {contains: filters[0] || ''}, 
+      //   avg_rating: filters[1] || null
+      // }
     });
 
-    return { total, items: response, page, size };
+    let result : PaginatedResult<Anime> = new PaginatedResult<Anime>();
+
+    result.data = response;
+    result.meta = {
+      total:  responseTotal.length,
+      lastPage: Math.ceil(responseTotal.length / limit),
+      next: limit + offset,
+      prev: (offset >= limit) ? offset - limit : 0,
+      currentPage: page,
+      perPage: limit,
+    }
+
+    return result;
   }
 
   async find(name: string) {
