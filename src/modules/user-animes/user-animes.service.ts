@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
@@ -49,7 +50,7 @@ export class UserAnimesService {
       where: {
         userID: user.id,
         animeID: animeID,
-      },
+      }
     });
 
     if (!userAnime) {
@@ -63,7 +64,7 @@ export class UserAnimesService {
     const animes = await this.prismaService.animeUser.findMany({
       where: {
         userID: user.id,
-      },
+      }
     });
 
     if (!animes) {
@@ -75,17 +76,23 @@ export class UserAnimesService {
 
   @UseGuards(AuthGuard)
   async updateRating(@AuthUser() user: User, updateInfo: UpdateUserAnimeDto) {
-    await this.prismaService.animeUser.updateMany({
-      where: {
-        userID: user.id,
-        animeID: updateInfo.animeID,
-      },
-      data: {
-        userID: user.id,
-        animeID: updateInfo.animeID,
-        user_anime_rating: updateInfo.user_anime_rating,
-      },
-    });
+    try {
+      await this.prismaService.animeUser.updateMany({
+        where: {
+          userID: user.id,
+          animeID: updateInfo.animeID,
+        },
+        data: {
+          userID: user.id,
+          animeID: updateInfo.animeID,
+          user_anime_rating: updateInfo.user_anime_rating,
+        },
+      });
+
+      return  { message: 'Anime rating updated successfully' };
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
   }
 
   remove(id: number) {

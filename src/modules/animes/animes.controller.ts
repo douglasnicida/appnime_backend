@@ -56,8 +56,6 @@ export class AnimesController {
       offset: Number (page * limit)
     }
 
-    console.log(page)
-
     let response = await this.animesService.findAll(pagination, filters)
 
     return {

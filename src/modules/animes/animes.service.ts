@@ -48,10 +48,15 @@ export class AnimesService {
     });
   }
 
+  /*
+  * Get all anime witb pagination
+  * @param pagination: Pagination -> page, limit, offset
+  * @param filters: string -> search filters
+  */
   async findAll(pagination: Pagination, filters?: string[]): Promise<PaginatedResult<Anime>> {
-    const { page, limit, offset } = pagination;
+    let { page, limit, offset } = pagination;
 
-
+    // Getting the total count of animes
     const responseTotal: Anime[] = await this.prismaService.anime.findMany({
       orderBy: {
         start_airing: 'desc',
