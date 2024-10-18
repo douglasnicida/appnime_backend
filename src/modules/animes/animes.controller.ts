@@ -28,19 +28,10 @@ export class AnimesController {
     };
   }
 
-  @Get(':name')
-  async find(@Param('name') name: string): Promise<MyResponse<Anime[]>> {
-    const animes = await this.animesService.find(name);
-    return {
-      status: HttpStatus.FOUND,
-      message: 'Animes were returned with success',
-      payload: animes,
-    };
-  }
-
   @Get(':id')
   async findByID(@Param('id') id: string): Promise<MyResponse<Anime>> {
     const anime = await this.animesService.findByID(+id);
+
     return {
       status: HttpStatus.FOUND,
       message: 'Anime was returned with success',
