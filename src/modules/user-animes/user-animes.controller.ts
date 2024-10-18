@@ -14,7 +14,7 @@ import { CreateUserAnimeDto } from './dto/create-user-anime.dto';
 import { UpdateUserAnimeDto } from './dto/update-user-anime.dto';
 import { AuthUser } from 'src/decorators/user.decorator';
 import { AnimeUser, User } from '@prisma/client';
-import { MyResponse } from 'src/interfaces/interfaces';
+import { AuthenticatedUser, MyResponse } from 'src/interfaces/interfaces';
 import { AuthGuard } from 'src/guards/auth/auth.guard';
 
 @Controller('user-animes')
@@ -24,7 +24,7 @@ export class UserAnimesController {
   @Post()
   @UseGuards(AuthGuard)
   async create(
-    @AuthUser() user: User,
+    @AuthUser() user: AuthenticatedUser,
     @Body() createUserAnimeDto: CreateUserAnimeDto,
   ): Promise<MyResponse<void>> {
     await this.userAnimesService.create(user, createUserAnimeDto);
@@ -38,7 +38,7 @@ export class UserAnimesController {
   @Get(':id')
   @UseGuards(AuthGuard)
   async findOne(
-    @AuthUser() user: User,
+    @AuthUser() user: AuthenticatedUser,
     @Param('id') animeID: string,
   ): Promise<MyResponse<AnimeUser>> {
     const response = await this.userAnimesService.findOne(user, +animeID);
@@ -52,7 +52,7 @@ export class UserAnimesController {
 
   @Get('user')
   @UseGuards(AuthGuard)
-  async findByUser(@AuthUser() user: User): Promise<MyResponse<AnimeUser[]>> {
+  async findByUser(@AuthUser() user: AuthenticatedUser): Promise<MyResponse<AnimeUser[]>> {
     const response = await this.userAnimesService.findByUser(user);
 
     return {
@@ -65,7 +65,7 @@ export class UserAnimesController {
   @Patch()
   @UseGuards(AuthGuard)
   async update(
-    @AuthUser() user: User,
+    @AuthUser() user: AuthenticatedUser,
     @Body() updateRating: UpdateUserAnimeDto,
   ): Promise<MyResponse<void>> {
     await this.userAnimesService.updateRating(user, updateRating);

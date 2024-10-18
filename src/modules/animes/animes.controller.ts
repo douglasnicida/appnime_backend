@@ -12,15 +12,15 @@ import { AnimesService } from './animes.service';
 import { CreateAnimeDto } from './dto/create-anime.dto';
 import { MyResponse } from 'src/interfaces/interfaces';
 import { Anime } from '@prisma/client';
-import { PaginatedResult, Pagination } from 'src/decorators/pagination.decorator';
+import { GetPagination, PaginatedResult, Pagination } from 'src/decorators/pagination.decorator';
 
 @Controller('animes')
 export class AnimesController {
   constructor(private readonly animesService: AnimesService) {}
 
   @Post()
-  async create(@Body() anime: CreateAnimeDto): Promise<MyResponse<void>> {
-    await this.animesService.create(anime);
+  async create(@Body() createAnimeDTO: CreateAnimeDto): Promise<MyResponse<void>> {
+    await this.animesService.create(createAnimeDTO);
 
     return {
       status: HttpStatus.CREATED,
@@ -49,14 +49,9 @@ export class AnimesController {
   }
 
   @Get()
-  async findAll(@Query('page') page: number, @Query('limit') limit: number, @Query('filters') filters?: string[]): Promise<MyResponse<PaginatedResult<Anime>>> {
-    let pagination: Pagination = {
-      page: Number(page),
-      limit: Number(limit),
-      offset: Number (page * limit)
-    }
+  async findAll(@GetPagination() pagination : Pagination): Promise<MyResponse<PaginatedResult<Anime>>> {
 
-    let response = await this.animesService.findAll(pagination, filters)
+    let response = await this.animesService.findAll(pagination)
 
     return {
       status: HttpStatus.FOUND,

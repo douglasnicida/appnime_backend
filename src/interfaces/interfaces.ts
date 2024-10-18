@@ -5,3 +5,9 @@ export interface MyResponse<T> {
   message: string;
   payload?: T;
 }
+
+export type AuthenticatedUser = {
+  id: number;
+  email: string;
+  name: string;
+}

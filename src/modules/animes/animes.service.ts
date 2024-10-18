@@ -6,7 +6,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'prisma/service/prisma.service';
-import { UsersService } from 'src/modules/users/users.service';
 import { PaginatedResult, Pagination } from 'src/decorators/pagination.decorator';
 import { CreateAnimeDto } from './dto/create-anime.dto';
 import { Anime } from '@prisma/client';
@@ -15,8 +14,6 @@ import { Anime } from '@prisma/client';
 export class AnimesService {
   constructor(
     private readonly prismaService: PrismaService,
-    @Inject(forwardRef(() => UsersService))
-    private readonly userService: UsersService,
   ) {}
 
   async create(newAnime: CreateAnimeDto) {
@@ -50,11 +47,10 @@ export class AnimesService {
 
   /*
   * Get all anime witb pagination
-  * @param pagination: Pagination -> page, limit, offset
-  * @param filters: string -> search filters
+  * @param pagination: Pagination -> page, limit, offset, sort?, search?
   */
-  async findAll(pagination: Pagination, filters?: string[]): Promise<PaginatedResult<Anime>> {
-    let { page, limit, offset } = pagination;
+  async findAll(pagination: Pagination): Promise<PaginatedResult<Anime>> {
+    let { page, limit, offset, search, sort } = pagination;
 
     // Getting the total count of animes
     const responseTotal: Anime[] = await this.prismaService.anime.findMany({

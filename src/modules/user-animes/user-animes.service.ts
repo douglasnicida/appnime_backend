@@ -12,7 +12,7 @@ import { AnimesService } from '../animes/animes.service';
 import { CreateUserAnimeDto } from './dto/create-user-anime.dto';
 import { AuthUser } from 'src/decorators/user.decorator';
 import { AuthGuard } from 'src/guards/auth/auth.guard';
-import { User } from '@prisma/client';
+import { AuthenticatedUser } from 'src/interfaces/interfaces';
 
 @Injectable()
 export class UserAnimesService {
@@ -24,7 +24,7 @@ export class UserAnimesService {
 
   @UseGuards(AuthGuard)
   async create(
-    @AuthUser() user: User,
+    @AuthUser() user: AuthenticatedUser,
     createUserAnimeInfo: CreateUserAnimeDto,
   ) {
     const anime = await this.animeService.findByID(createUserAnimeInfo.animeID);
@@ -45,7 +45,7 @@ export class UserAnimesService {
   }
 
   @UseGuards(AuthGuard)
-  async findOne(@AuthUser() user: User, animeID: number) {
+  async findOne(@AuthUser() user: AuthenticatedUser, animeID: number) {
     const userAnime = await this.prismaService.animeUser.findMany({
       where: {
         userID: user.id,
@@ -60,7 +60,7 @@ export class UserAnimesService {
     return userAnime[0];
   }
 
-  async findByUser(@AuthUser() user: User) {
+  async findByUser(@AuthUser() user: AuthenticatedUser) {
     const animes = await this.prismaService.animeUser.findMany({
       where: {
         userID: user.id,
@@ -75,7 +75,7 @@ export class UserAnimesService {
   }
 
   @UseGuards(AuthGuard)
-  async updateRating(@AuthUser() user: User, updateInfo: UpdateUserAnimeDto) {
+  async updateRating(@AuthUser() user: AuthenticatedUser, updateInfo: UpdateUserAnimeDto) {
     try {
       await this.prismaService.animeUser.updateMany({
         where: {
