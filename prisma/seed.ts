@@ -46,6 +46,11 @@ async function seed () {
 
         })
         await prisma.anime.createMany({data:  animeList})
+        await prisma.user.create({data: {
+          email: "admin@admin.com",
+          name: "admin",
+          password: "$2a$10$1i76xc6wiJ30kYcLu990vORWnN6S53aw1ovTggcHQ1tVGoXIua0l6"
+        }})
       }
 }
 

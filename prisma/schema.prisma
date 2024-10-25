@@ -23,7 +23,7 @@ model AnimeUser {
   userID            Int
   anime             Anime @relation(fields: [animeID], references: [id])
   animeID           Int
-  user_anime_rating Int
+  user_anime_rating Float
 
   @@id([userID, animeID])
 }

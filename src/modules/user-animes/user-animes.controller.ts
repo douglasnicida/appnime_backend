@@ -35,6 +35,18 @@ export class UserAnimesController {
     };
   }
 
+  @Get('/user')
+  @UseGuards(AuthGuard)
+  async findByUser(@AuthUser() user: AuthenticatedUser): Promise<MyResponse<AnimeUser[]>> {
+    const response = await this.userAnimesService.findByUser(user);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'User anime returned with success.',
+      payload: response,
+    };
+  }
+
   @Get(':id')
   @UseGuards(AuthGuard)
   async findOne(
@@ -49,18 +61,7 @@ export class UserAnimesController {
       payload: response,
     };
   }
-
-  @Get('user')
-  @UseGuards(AuthGuard)
-  async findByUser(@AuthUser() user: AuthenticatedUser): Promise<MyResponse<AnimeUser[]>> {
-    const response = await this.userAnimesService.findByUser(user);
-
-    return {
-      status: HttpStatus.OK,
-      message: 'User anime returned with success.',
-      payload: response,
-    };
-  }
+  
 
   @Patch()
   @UseGuards(AuthGuard)
@@ -78,7 +79,7 @@ export class UserAnimesController {
 
   @Delete(':id')
   @UseGuards(AuthGuard)
-  remove(@Param('id') id: string) {
-    return this.userAnimesService.remove(+id);
+  remove(@Param('id') id: string, @AuthUser() user: AuthenticatedUser) {
+    return this.userAnimesService.remove(+id, user);
   }
 }

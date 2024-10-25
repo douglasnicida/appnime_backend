@@ -10,8 +10,6 @@ import { UpdateUserAnimeDto } from './dto/update-user-anime.dto';
 import { PrismaService } from 'prisma/service/prisma.service';
 import { AnimesService } from '../animes/animes.service';
 import { CreateUserAnimeDto } from './dto/create-user-anime.dto';
-import { AuthUser } from 'src/decorators/user.decorator';
-import { AuthGuard } from 'src/guards/auth/auth.guard';
 import { AuthenticatedUser } from 'src/interfaces/interfaces';
 
 @Injectable()
@@ -22,9 +20,8 @@ export class UserAnimesService {
     private readonly animeService: AnimesService,
   ) {}
 
-  @UseGuards(AuthGuard)
   async create(
-    @AuthUser() user: AuthenticatedUser,
+    user: AuthenticatedUser,
     createUserAnimeInfo: CreateUserAnimeDto,
   ) {
     const anime = await this.animeService.findByID(createUserAnimeInfo.animeID);
@@ -37,20 +34,19 @@ export class UserAnimesService {
       data: {
         userID: user.id,
         animeID: anime.id,
-        user_anime_rating: -1,
+        user_anime_rating: createUserAnimeInfo.user_anime_rating,
       },
     });
 
     return newAnimeUser;
   }
 
-  @UseGuards(AuthGuard)
-  async findOne(@AuthUser() user: AuthenticatedUser, animeID: number) {
-    const userAnime = await this.prismaService.animeUser.findMany({
+  async findOne(user: AuthenticatedUser, animeID: number) {
+    const userAnime = await this.prismaService.animeUser.findFirst({
       where: {
         userID: user.id,
         animeID: animeID,
-      }
+      },
     });
 
     if (!userAnime) {
@@ -60,10 +56,13 @@ export class UserAnimesService {
     return userAnime[0];
   }
 
-  async findByUser(@AuthUser() user: AuthenticatedUser) {
+  async findByUser(user: AuthenticatedUser) {
     const animes = await this.prismaService.animeUser.findMany({
       where: {
         userID: user.id,
+      },
+      include: {
+        anime: true,
       }
     });
 
@@ -74,8 +73,7 @@ export class UserAnimesService {
     return animes;
   }
 
-  @UseGuards(AuthGuard)
-  async updateRating(@AuthUser() user: AuthenticatedUser, updateInfo: UpdateUserAnimeDto) {
+  async updateRating(user: AuthenticatedUser, updateInfo: UpdateUserAnimeDto) {
     try {
       await this.prismaService.animeUser.updateMany({
         where: {
@@ -95,7 +93,14 @@ export class UserAnimesService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} userAnime`;
+  async remove(id: number, user: AuthenticatedUser) {
+    return await this.prismaService.animeUser.delete({
+      where: {
+        userID_animeID: {
+          userID: user.id,
+          animeID: id,
+        }
+      }
+    });
   }
 }
