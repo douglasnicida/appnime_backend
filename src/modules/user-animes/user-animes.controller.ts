@@ -8,13 +8,14 @@ import {
   Delete,
   HttpStatus,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { UserAnimesService } from './user-animes.service';
 import { CreateUserAnimeDto } from './dto/create-user-anime.dto';
 import { UpdateUserAnimeDto } from './dto/update-user-anime.dto';
 import { AuthUser } from 'src/decorators/user.decorator';
 import { AnimeUser, User } from '@prisma/client';
-import { AuthenticatedUser, MyResponse } from 'src/interfaces/interfaces';
+import { AuthenticatedUser, MyResponse, OrderByTypes } from 'src/interfaces/interfaces';
 import { AuthGuard } from 'src/guards/auth/auth.guard';
 
 @Controller('user-animes')
@@ -37,8 +38,8 @@ export class UserAnimesController {
 
   @Get('/user')
   @UseGuards(AuthGuard)
-  async findByUser(@AuthUser() user: AuthenticatedUser): Promise<MyResponse<AnimeUser[]>> {
-    const response = await this.userAnimesService.findByUser(user);
+  async findByUser(@AuthUser() user: AuthenticatedUser, @Query('orderByRating') orderByRating: OrderByTypes, @Query('orderByName') orderByAnimeName: OrderByTypes): Promise<MyResponse<AnimeUser[]>> {
+    const response = await this.userAnimesService.findByUser(user, orderByRating, orderByAnimeName);
 
     return {
       status: HttpStatus.OK,

@@ -11,3 +11,8 @@ export type AuthenticatedUser = {
   email: string;
   name: string;
 }
+
+export enum OrderByTypes {
+  ASC = 'asc',
+  DESC = 'desc'
+}
