@@ -28,6 +28,17 @@ export class AnimesController {
     };
   }
 
+  @Get('/recent')
+  async findRecent(): Promise<any> {
+    const recentAnimes: Anime[] = await this.animesService.findRecent();
+
+    return {
+      status: HttpStatus.FOUND,
+      message: 'Anime was returned with success.',
+      payload: recentAnimes
+    };
+  }
+
   @Get(':id')
   async findByID(@Param('id') id: string): Promise<MyResponse<Anime>> {
     const anime = await this.animesService.findByID(+id);

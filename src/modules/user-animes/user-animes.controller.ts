@@ -38,8 +38,13 @@ export class UserAnimesController {
 
   @Get('/user')
   @UseGuards(AuthGuard)
-  async findByUser(@AuthUser() user: AuthenticatedUser, @Query('orderByRating') orderByRating: OrderByTypes, @Query('orderByName') orderByAnimeName: OrderByTypes): Promise<MyResponse<AnimeUser[]>> {
-    const response = await this.userAnimesService.findByUser(user, orderByRating, orderByAnimeName);
+  async findByUser(
+    @AuthUser() user: AuthenticatedUser, 
+    @Query('orderByRating') orderByRating: OrderByTypes, 
+    @Query('orderByName') orderByAnimeName: OrderByTypes,
+    @Query('search') searchTitle: string
+  ): Promise<MyResponse<AnimeUser[]>> {
+    const response = await this.userAnimesService.findByUser(user, orderByRating, orderByAnimeName, searchTitle);
 
     return {
       status: HttpStatus.OK,

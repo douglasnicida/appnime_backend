@@ -11,6 +11,7 @@ import { PrismaService } from 'prisma/service/prisma.service';
 import { AnimesService } from '../animes/animes.service';
 import { CreateUserAnimeDto } from './dto/create-user-anime.dto';
 import { AuthenticatedUser, OrderByTypes } from 'src/interfaces/interfaces';
+import { PaginatedResult, Pagination } from 'src/decorators/pagination.decorator';
 
 @Injectable()
 export class UserAnimesService {
@@ -24,7 +25,8 @@ export class UserAnimesService {
     user: AuthenticatedUser,
     createUserAnimeInfo: CreateUserAnimeDto,
   ) {
-    const anime = await this.animeService.findByID(createUserAnimeInfo.animeID);
+
+    let  anime = await this.animeService.findByID(createUserAnimeInfo.animeID);
 
     if (!anime) {
       throw new NotFoundException('Anime not found!');
@@ -56,29 +58,48 @@ export class UserAnimesService {
     return userAnime[0];
   }
 
-  async findByUser (user: AuthenticatedUser , orderByRating?: OrderByTypes, orderByAnimeName?: OrderByTypes) {
+  async findByUser(
+    user: AuthenticatedUser,
+    orderByRating?: OrderByTypes,
+    orderByAnimeName?: OrderByTypes,
+    searchTitle?: string
+  ) {
     const orderBy = [];
-
+  
     if (orderByRating) {
-        orderBy.push({ user_anime_rating: OrderByTypes[orderByRating] });
+      orderBy.push({ user_anime_rating: OrderByTypes[orderByRating] });
     }
-
+  
     if (orderByAnimeName) {
-        orderBy.push({ anime: { en_title: OrderByTypes[orderByAnimeName] } });
+      orderBy.push({ anime: { en_title: OrderByTypes[orderByAnimeName] } });
     }
-
-    const animes = await this.prismaService.animeUser .findMany({
-        where: { userID: user.id },
-        include: { anime: true },
-        orderBy: orderBy.length ? orderBy : undefined, // Use orderBy only if there are criteria
+  
+    const titleCondition = searchTitle
+      ? {
+          OR: [
+            { anime: { en_title: { contains: searchTitle } } },
+            { anime: { jp_title: { contains: searchTitle } } },
+          ],
+        }
+      : {};
+  
+    const animes = await this.prismaService.animeUser.findMany({
+      where: {
+        userID: user.id,
+        AND: [
+          titleCondition,
+        ],
+      },
+      include: { anime: true },
+      orderBy: orderBy.length ? orderBy : undefined,
     });
-
+  
     if (animes.length === 0) {
-        throw new NotFoundException('This user doesn\'t have animes added.');
+      throw new NotFoundException("This user doesn't have animes added.");
     }
-
+  
     return animes;
-}
+  }
 
   async updateRating(user: AuthenticatedUser, updateInfo: UpdateUserAnimeDto) {
     try {

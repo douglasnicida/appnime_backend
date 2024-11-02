@@ -20,7 +20,7 @@ export class AnimesService {
     const anime = await this.prismaService.anime.findFirst({
       where: {
         jp_title: newAnime.jp_title,
-        en_title: newAnime.en_title,
+        en_title: newAnime.en_title
       },
     });
 
@@ -51,29 +51,31 @@ export class AnimesService {
   */
   async findAll(pagination: Pagination): Promise<PaginatedResult<Anime>> {
     let { page, limit, offset, search, sort } = pagination;
+    
+    const whereQuery = search ? {
+      jp_title: { contains: search },
+      OR: [
+        { en_title: { contains: search } },
+      ]
+    } : {}
 
     // Getting the total count of animes
     const responseTotal: Anime[] = await this.prismaService.anime.findMany({
-      orderBy: {
-        start_airing: 'desc',
-      }
+      where: whereQuery
     });
 
     const response: Anime[] = await this.prismaService.anime.findMany({
       take: limit,
       skip: offset,
-      orderBy: {
-        start_airing: 'desc',
-      },
-      // where: {
-      //   en_title: {contains: filters[0] || ''},
-      //   jp_title: {contains: filters[0] || ''}, 
-      //   avg_rating: filters[1] || null
-      // }
+      orderBy: [
+        { avg_rating: 'desc'},
+        { jp_title: 'asc' },
+      ],
+      where: whereQuery
     });
 
     let result : PaginatedResult<Anime> = new PaginatedResult<Anime>();
-
+    
     result.data = response;
     result.meta = {
       total:  responseTotal.length,
@@ -87,13 +89,13 @@ export class AnimesService {
     return result;
   }
 
-  async find(name: string) {
+  async findRecent() {
     const anime = await this.prismaService.anime.findMany({
       where: {
-        en_title: {
-          contains: name,
-        },
+        recently_added: true
       },
+      take: 10,
+      skip: 0
     });
 
     if (!anime) {

@@ -5,8 +5,8 @@ export interface Pagination {
   page?: number;
   limit?: number;
   offset?: number;
-  sort?: {field: string, by: "ASC" | "DESC"}[];
-  search?: {field: string, value: string}[];
+  sort?: string;
+  search?: string;
 }
 
 // export type PaginateOptions = { page?: number | string, perPage?: number | string }
@@ -31,8 +31,8 @@ export const GetPagination = createParamDecorator((data, ctx: ExecutionContext) 
     offset: 0,
     limit: 10,
     page: 0,
-    sort: [],
-    search: []
+    sort: "",
+    search: ""
   }
 
   paginationParams.offset = req.query.offset ? parseInt(req.query.offset.toString()) : 0;
@@ -40,38 +40,11 @@ export const GetPagination = createParamDecorator((data, ctx: ExecutionContext) 
   paginationParams.page = req.query.page ? parseInt(req.query.page.toString()) : 0;
 
   if(req.query.sort) {
-    const sortArray = req.query.sort.toString().split(',');
-
-    paginationParams.sort = sortArray.map(sortItem => {
-      const sortBy = sortItem[0]
-
-      switch(sortBy) {
-        case "-":
-        case "+":
-          return{
-            field:sortItem.slice(1),
-            by:'ASC'
-          }
-        default: 
-        return {
-          field: sortItem.trim(),
-          by: 'DESC'
-        }
-      }
-    })
+    paginationParams.sort = req.query.sort.toString()
   }
 
   if(req.query.search) {
-    const searchArray = req.query.search.toString().split(',');
-    paginationParams.search = searchArray.map(searchItem => {
-      const field = searchItem.split(":")[0];
-      const value = searchItem.split(":")[1];
-
-      return {
-        field,
-        value
-      }
-    })
+    paginationParams.search = req.query.search.toString()
   }
 
   return paginationParams;
