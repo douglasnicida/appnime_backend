@@ -59,27 +59,25 @@ export class AnimesService {
       ]
     } : {}
 
-    // Getting the total count of animes
-    const responseTotal: Anime[] = await this.prismaService.anime.findMany({
-      where: whereQuery
-    });
-
-    const response: Anime[] = await this.prismaService.anime.findMany({
-      take: limit,
-      skip: offset,
-      orderBy: [
-        { avg_rating: 'desc'},
-        { jp_title: 'asc' },
-      ],
-      where: whereQuery
-    });
+    const [animes, totalAnimes] = await this.prismaService.$transaction([
+      this.prismaService.anime.findMany({
+        take: limit,
+        skip: offset,
+        orderBy: [
+          { avg_rating: 'desc'},
+          { jp_title: 'asc' },
+        ],
+        where: whereQuery
+      }),
+      this.prismaService.anime.count({where: whereQuery})
+    ])
 
     let result : PaginatedResult<Anime> = new PaginatedResult<Anime>();
     
-    result.data = response;
+    result.data = animes;
     result.meta = {
-      total:  responseTotal.length,
-      lastPage: Math.ceil(responseTotal.length / limit),
+      total:  totalAnimes,
+      lastPage: Math.ceil(totalAnimes / limit),
       next: limit + offset,
       prev: (offset >= limit) ? offset - limit : 0,
       currentPage: page,
